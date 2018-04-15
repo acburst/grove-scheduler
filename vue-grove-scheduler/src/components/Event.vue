@@ -1,5 +1,5 @@
 <template>
-  <div class="event-card">
+  <div class="event-card" v-bind:class="{ past: isPassed }">
     <h1>{{name}}</h1>
     <span class="date"></span>
   </div>
@@ -12,10 +12,10 @@ import livestamp from '@bassettsj/livestamp/livestamp.js'
 
 export default {
   name: 'Event',
-  props: ['type', 'cron', 'name'],
+  props: ['isPassed', 'cron', 'name'],
   data: {
     timeout: null,
-    next: '',
+    date: '',
     fromNow: 0,
     alertSent: false
   },
@@ -25,13 +25,17 @@ export default {
       var schedule = later.schedule(later.parse.cron(this.cron));
       var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric'};
 
-      this.next = schedule.next(1);
-      this.fromNow = this.next - new Date();
+      this.date = schedule.next(1);
+      if (this.isPassed) {
+        this.alertSent = true; // Don't send notification for past event
+        this.date = schedule.prev(1);
+      }
+      this.fromNow = this.date - new Date();
 
-      $(this.$el).find('.date').livestamp(this.next).on('change.livestamp', function(event, from, to) {
-        if (!$this.alertSent && ($this.next - new Date() < 0)) {
+      $(this.$el).find('.date').livestamp(this.date).on('change.livestamp', function(event, from, to) {
+        if (!$this.alertSent && ($this.date - new Date() < 0)) {
           $this.alertSent = true;
-          $this.notifyEvent($this.name, $this.next);
+          $this.notifyEvent($this.name, $this.date);
         }
       });
     })
@@ -51,5 +55,18 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(0,0,0,.2);
   padding: 16px;
   margin-bottom: 20px;
+  transition: opacity .3s;
+}
+
+.event-card.past {
+  opacity: 0.5;
+}
+
+.event-card.past h1 {
+  text-decoration: line-through;
+}
+
+h1 {
+  color: #4e5f6f;
 }
 </style>
