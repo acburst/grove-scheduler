@@ -1,12 +1,19 @@
 <template>
-  <div class="hello">
+  <div class="scheduler">
     <h1>{{ msg }}</h1>
-    <event v-for="event in events"></event>
+    <event
+      v-for="event in events"
+      v-bind:key="event.id"
+      v-bind:type="event.type"
+      v-bind:cron="event.attributes.cron"
+      v-bind:name="event.attributes.name"
+    ></event>
   </div>
 </template>
 
 <script>
 import Event from './Event.vue'
+
 export default {
   name: 'Scheduler',
   components: {Event},
@@ -19,8 +26,20 @@ export default {
   created: function() {
     this.$http.get('https://scheduler-challenge.herokuapp.com/schedule').then(response => {
       // success callback
-      console.log(response);
-      this.events = response.body.data;
+      var events = response.body.data;
+      events.sort(function(a,b) {
+        var scheduleA = later.schedule(later.parse.cron(a.attributes.cron));
+        var scheduleB = later.schedule(later.parse.cron(b.attributes.cron));
+        if (scheduleA.next(1) < scheduleB.next(1)) {
+          return -1;
+        }
+        if (scheduleA.next(1) > scheduleB.next(1)) {
+          return 1;
+        }
+        return 0
+      });
+
+      this.events = events;
     }, response => {
       // error callback
       console.log(response);
@@ -31,18 +50,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-  font-weight: normal;
+.scheduler {
+  width: 40%;
+  margin: 0 auto;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+@media screen and (max-width: 600px) {
+  .scheduler {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+  }
 }
 </style>
