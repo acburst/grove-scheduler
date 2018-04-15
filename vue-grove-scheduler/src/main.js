@@ -17,3 +17,6 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
+
+// Notifications
+Notification.requestPermission();
