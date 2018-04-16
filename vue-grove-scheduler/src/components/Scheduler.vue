@@ -34,15 +34,7 @@ export default {
       // success callback
       var events = response.body.data;
 
-      for (var i = 0; i < events.length; i++) {
-        var schedule = later.schedule(later.parse.cron(events[i].attributes.cron));
-
-        // 3 hours in milliseconds
-        if (schedule.prev(1) - new Date() >= -10800000) {
-          this.prevEvents.push(events[i]);
-        }
-      }
-
+      // Sort chronologically
       events.sort(function(a,b) {
         var scheduleA = later.schedule(later.parse.cron(a.attributes.cron));
         var scheduleB = later.schedule(later.parse.cron(b.attributes.cron));
@@ -55,26 +47,41 @@ export default {
         return 0
       });
 
+      // Find events that have happened in the past 3 hours
+      for (var i = events.length - 1; i >= 0; i--) {
+        var schedule = later.schedule(later.parse.cron(events[i].attributes.cron));
+
+        // 3 hours in milliseconds
+        if (schedule.prev(1) - new Date() >= -10800000) {
+          this.prevEvents.push(events[i]);
+        }
+      }
+
       this.nextEvents = events;
     }, response => {
       // error callback
-      console.log(response);
+      console.log("HTTP GET Error", response);
     });
 
     // Listener
     this.$on('markAsDone', (event) => {
-      console.log("MARKED AS DONE", event);
+      // Send web notification
       this.notifyEvent(event.name);
+
+      // Find event that in nextEvents
       var indexToBeMarked = this.nextEvents.findIndex((el) => {
         return el.attributes.name === event.name;
       });
-      console.log("SPLICE", indexToBeMarked);
+
+      // Create new event
       var newEvent = {
         attributes: {
           cron: event.cron,
           name: event.name
         }
       }
+
+      // Update arrays
       this.nextEvents[indexToBeMarked] = newEvent;
       this.prevEvents.push(newEvent);
     });

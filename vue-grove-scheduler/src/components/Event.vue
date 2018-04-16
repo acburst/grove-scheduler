@@ -16,12 +16,10 @@ export default {
   data: {
     timeout: null,
     date: '',
-    fromNow: 0,
     alertSent: false
   },
   created: function () {
     this.$nextTick(function () {
-      console.log("CREATED");
       var $this = this;
       var schedule = later.schedule(later.parse.cron(this.cron));
       var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric'};
@@ -31,12 +29,10 @@ export default {
         this.alertSent = true; // Don't send notification for past event
         this.date = schedule.prev(1);
       }
-      this.fromNow = this.date - new Date();
 
+      // Listener for when event happens
       $(this.$el).find('.date').livestamp(this.date).on('change.livestamp', function(event, from, to) {
-        console.log("LIVESTAMP");
         if (!$this.alertSent && (this.date - new Date() < 0)) {
-          console.log("EMIT", $this);
           $this.alertSent = true;
           $this.$parent.$emit('markAsDone', $this);
         }
