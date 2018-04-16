@@ -1,8 +1,9 @@
 # How to run
-npm install
-npm run dev
-Go to http://localhost:8080/
-Allow web notifications
+- cd vue-grove-scheduler
+- npm install
+- npm run dev
+- Go to http://localhost:8080/
+- Allow web notifications
 
 # About
 I use livestamp for the timers. When an event starts, I send a web notification and move the event to the past section and add the next event back.
