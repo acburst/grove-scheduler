@@ -36,9 +36,9 @@ export default {
 
       for (var i = 0; i < events.length; i++) {
         var schedule = later.schedule(later.parse.cron(events[i].attributes.cron));
+
         // 3 hours in milliseconds
         if (schedule.prev(1) - new Date() >= -10800000) {
-          console.log(schedule.prev(1), schedule.prev(1) - new Date(), schedule.prev(1) - new Date() < 10800000);
           this.prevEvents.push(events[i]);
         }
       }
@@ -60,6 +60,29 @@ export default {
       // error callback
       console.log(response);
     });
+
+    // Listener
+    this.$on('markAsDone', (event) => {
+      console.log("MARKED AS DONE", event);
+      this.notifyEvent(event.name);
+      var indexToBeMarked = this.nextEvents.findIndex((el) => {
+        return el.attributes.name === event.name;
+      });
+      console.log("SPLICE", indexToBeMarked);
+      var newEvent = {
+        attributes: {
+          cron: event.cron,
+          name: event.name
+        }
+      }
+      this.nextEvents[indexToBeMarked] = newEvent;
+      this.prevEvents.push(newEvent);
+    });
+  },
+  methods: {
+    notifyEvent: function(name) {
+      new Notification(name);
+    }
   }
 }
 </script>

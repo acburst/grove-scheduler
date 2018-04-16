@@ -21,6 +21,7 @@ export default {
   },
   created: function () {
     this.$nextTick(function () {
+      console.log("CREATED");
       var $this = this;
       var schedule = later.schedule(later.parse.cron(this.cron));
       var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric'};
@@ -33,17 +34,14 @@ export default {
       this.fromNow = this.date - new Date();
 
       $(this.$el).find('.date').livestamp(this.date).on('change.livestamp', function(event, from, to) {
-        if (!$this.alertSent && ($this.date - new Date() < 0)) {
+        console.log("LIVESTAMP");
+        if (!$this.alertSent && (this.date - new Date() < 0)) {
+          console.log("EMIT", $this);
           $this.alertSent = true;
-          $this.notifyEvent($this.name, $this.date);
+          $this.$parent.$emit('markAsDone', $this);
         }
       });
     })
-  },
-  methods: {
-    notifyEvent: function(title, date, delay) {
-      new Notification(title, null, date);
-    }
   }
 }
 </script>
