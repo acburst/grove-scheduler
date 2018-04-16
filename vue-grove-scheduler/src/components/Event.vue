@@ -31,10 +31,10 @@ export default {
       }
 
       // Listener for when event happens
-      $(this.$el).find('.date').livestamp(this.date).on('change.livestamp', function(event, from, to) {
-        if (!$this.alertSent && (this.date - new Date() < 0)) {
-          $this.alertSent = true;
-          $this.$parent.$emit('markAsDone', $this);
+      $(this.$el).find('.date').livestamp(this.date).on('change.livestamp', (event, from, to) => {
+        if (!this.alertSent && (this.date - new Date() < 0)) {
+          this.alertSent = true;
+          this.$parent.$emit('markAsDone', $this);
         }
       });
     })
